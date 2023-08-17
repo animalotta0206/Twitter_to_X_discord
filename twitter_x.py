@@ -131,4 +131,4 @@ async def on_ready():
     print(discord.__version__)  # discord.pyのバージョン
     print('------')
     
-client.run("MTE0MTM5MzAwNTUxMzgxMDA0MQ.GyZpN0.shro1p8KIR9PyQTRh-PmdPIGsMM1DmRDS55C0I")
+client.run("YOUR TOKEN HERE")
