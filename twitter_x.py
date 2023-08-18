@@ -4,15 +4,55 @@ import datetime
 from discord_slash import SlashCommand, SlashContext
 from discord_slash.utils.manage_commands import create_option
 
-client = discord.Client()
+Intents = discord.Intents.default()
+Intents.members = True
+client = discord.Client(intents=Intents)
 #slash = SlashCommand(client, sync_commands=True)
 slash = SlashCommand(client, sync_commands=False)
 
+bot_master = 862605548389269525
 support_guild = '[サポートサーバーに参加する](https://discord.gg/pFgBSt6MPX)'
 no_x = 'Twitter_to_X/no_x.json'
 no_x_u = 'Twitter_to_X/no_x_u.json'
 
-@slash.slash(name="stop_x", description="指定したチャンネルで、botが反応しないように設定します。")
+@slash.slash(name="help", description="このbotのヘルプを表示します。")
+async def help(ctx: SlashContext):
+    user = client.get_user(bot_master)
+    embed=discord.Embed(title="bot-help", description="コマンドの実行はスラッシュコマンドのみサポートされています。", color=0x00d5ff)
+    embed.set_author(name="Twitterって言ったら𝕏って訂正してくるクソbot#6945", icon_url="https://cdn.discordapp.com/avatars/1141393005513810041/f44de0e5883a9812e440af18ccbd73e5.png?size=4096")
+    embed.add_field(name="/stop_x", value="指定したチャンネルで、botが反応しないように設定します。", inline=True)
+    embed.add_field(name="/start_x", value="指定したチャンネルで、botが反応しないように設定されている場合にその設定を解除することができます。", inline=True)
+    embed.add_field(name="/stop_your_x", value="このコマンドを実行すると、コマンド実行者への反応を停止することができます。", inline=False)
+    embed.add_field(name="/start_yor_x", value="このコマンドを実行すると、コマンド実行者への反応を再開することができます。", inline=True)
+    embed.add_field(name="サポートサーバーのご案内", value="サポートサーバーでは、製作者に直接お問い合わせすることができます。\n[サポートサーバーに参加](https://discord.gg/pFgBSt6MPX)", inline=False)
+    embed.set_footer(text=f"bot制作者「{user.display_name}」", icon_url=f"https://cdn.discordapp.com/avatars/{user.id}/{user.avatar}.png?size=1024")
+    await ctx.send(embed=embed)
+
+@slash.slash(name="get_setting_user", description="現在の設定状況を取得します。(個人設定)")
+async def get_setting_user(ctx: SlashContext):
+    with open(no_x_u, 'r') as f:
+        check_d = json.load(f)
+    if ctx.author.id in check_d:
+        data1 = "True"
+    else:
+        data1 = "False"
+    try:
+        embed=discord.Embed(color=0x00e1ff)
+        embed.set_author(name=f"{ctx.author.name}", icon_url=f"https://cdn.discordapp.com/avatars/{ctx.author.id}/{ctx.author.avatar}.png?size=1024")
+        embed.add_field(name="botの反応設定", value=f"`{data1}`", inline=True)
+        embed.add_field(name="DevMode", value="`Flase`", inline=True)
+        await ctx.author.send(content=f"<@{ctx.author.id}>さんの個人設定", embed=embed)
+        await ctx.send("DMに個人設定の情報を送信しました。")
+    except Exception as e:
+        await ctx.send("DMの送信ができませんでした。")
+
+@slash.slash(name="stop_x", description="指定したチャンネルで、botが反応しないように設定します。", options=[
+    {
+        "name":"channel",
+        "description":"botの反応を停止するチャンネルを選択してください。",
+        "type": 7,
+        "required": True
+    }])
 async def twitter_url_to_x(ctx: SlashContext, channel: discord.TextChannel):
     if ctx.author.guild_permissions.administrator == False:
         await ctx.send("このコマンドの実行には管理者権限が必要になります。")
@@ -29,7 +69,13 @@ async def twitter_url_to_x(ctx: SlashContext, channel: discord.TextChannel):
     embed.add_field(name="無効化したチャンネル", value=f"<#{channel.id}>", inline=False)
     await ctx.send("設定が完了しました。", embed=embed)
 
-@slash.slash(name="start_x", description="指定したチャンネルのbotの反応を再開します。")
+@slash.slash(name="start_x", description="指定したチャンネルのbotの反応を再開します。", options=[
+    {
+        "name":"channel",
+        "description":"botの反応を再開するチャンネルを選択してください。",
+        "type": 7,
+         "required": True
+    }])
 async def start_x(ctx: SlashContext, channel: discord.TextChannel):
     if ctx.author.guild_permissions.administrator == False:
         await ctx.send("このコマンドの実行には管理者権限が必要になります。")
@@ -110,6 +156,8 @@ async def on_message(message):
         image_path = 'Twitter_to_X/RIP_Twitter.png'
         image = discord.File(image_path)
         await message.reply(content="## R.I.P", file=image)
+    if message.content.find("https://x.com/") != -1:
+        await message.add_reaction('<:x_twitter:1141394760637100032>')
     
 
 #サーバーログ
